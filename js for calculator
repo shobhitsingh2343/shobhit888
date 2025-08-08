@@ -1,0 +1,86 @@
+const display = document.getElementById('display');
+const buttons = document.querySelectorAll('.buttons button');
+
+let currentInput = '';
+let previousInput = '';
+let currentOperator = null;
+let shouldResetScreen = false;
+
+function updateDisplay() {
+  display.value = currentInput;
+}
+
+function appendNumber(number) {
+  if (number === '.' && currentInput.includes('.')) return;
+  if (shouldResetScreen) {
+    currentInput = '';
+    shouldResetScreen = false;
+  }
+  currentInput += number;
+  updateDisplay();
+}
+
+function chooseOperator(operator) {
+  if (currentInput === '') return;
+  if (previousInput !== '') {
+    performCalculation();
+  }
+  currentOperator = operator;
+  previousInput = currentInput;
+  shouldResetScreen = true;
+}
+
+function performCalculation() {
+  let prev = parseFloat(previousInput);
+  let current = parseFloat(currentInput);
+  if (isNaN(prev) || isNaN(current)) return;
+  let result;
+  switch (currentOperator) {
+    case '+':
+      result = prev + current;
+      break;
+    case '-':
+      result = prev - current;
+      break;
+    case '*':
+      result = prev * current;
+      break;
+    case '/':
+      if (current === 0) {
+        alert("Cannot divide by zero");
+        clearCalculator();
+        return;
+      }
+      result = prev / current;
+      break;
+    default:
+      return;
+  }
+  currentInput = result.toString();
+  currentOperator = null;
+  previousInput = '';
+  updateDisplay();
+}
+
+function clearCalculator() {
+  currentInput = '';
+  previousInput = '';
+  currentOperator = null;
+  updateDisplay();
+}
+
+buttons.forEach(button => {
+  if (button.hasAttribute('data-num')) {
+    button.addEventListener('click', () => {
+      appendNumber(button.getAttribute('data-num'));
+    });
+  } else if (button.classList.contains('operator')) {
+    button.addEventListener('click', () => {
+      chooseOperator(button.getAttribute('data-op'));
+    });
+  } else if (button.id === 'equals') {
+    button.addEventListener('click', performCalculation);
+  } else if (button.id === 'clear') {
+    button.addEventListener('click', clearCalculator);
+  }
+});
